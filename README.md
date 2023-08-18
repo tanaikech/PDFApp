@@ -909,4 +909,8 @@ PDFApp.setPDFBlob(blob).embedObjects(object)
 
   1. Initial release.
 
+- v1.0.1 (August 18, 2023)
+
+  1. About the method of "getMetadata", `pageInfo` is added to the retrieved metadata. By this, each page size can be obtained.
+
 [TOP](#top)

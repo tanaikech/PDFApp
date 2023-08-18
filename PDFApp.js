@@ -279,6 +279,13 @@ class PDFApp {
       try {
         const metadata = keys.reduce((o, k) => ((o[k] = pdfData[`get${k.charAt(0).toUpperCase() + k.slice(1)}`]() || null), o), {});
         metadata.numberOfPages = pdfData.getPageCount();
+        const pdfDoc = await this.PDFLib.PDFDocument.create();
+        const pages = await pdfDoc.copyPages(pdfData, [...Array(pdfData.getPageCount())].map((_, i) => i));
+        metadata.pageInfo = pages.map((page, i) => {
+          const { width, height } = page.getSize();
+          const { x, y } = page.getPosition();
+          return { page: i + 1, pageWidth: width, pageHeight: height, defaultPositionX: x, defaultPositionY: y };
+        });
         resolve(metadata);
       } catch (err) {
         reject(err);
