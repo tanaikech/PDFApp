@@ -27,6 +27,7 @@ I have already published the following posts.
 - [Retrieving and Putting Values for PDF Forms using Google Apps Script](https://medium.com/google-cloud/retrieving-and-putting-values-for-pdf-forms-using-google-apps-script-92412a7cf0af)
 - [Creating PDF Forms from Google Slide Template using Google Apps Script](https://medium.com/google-cloud/creating-pdf-forms-from-google-slide-template-using-google-apps-script-cef35e7d9822)
 - [Embedding Objects in PDF using Google Apps Script](https://medium.com/google-cloud/embedding-objects-in-pdf-using-google-apps-script-ddbee857c642)
+- [Add Header and Footer to Exported PDF from Google Spreadsheet using Google Apps Script](https://medium.com/google-cloud/add-header-and-footer-to-exported-pdf-from-google-spreadsheet-using-google-apps-script-664fe5b190be)
 
 I created this library to more efficiently manage PDFs with a simple script by summarising the scripts of these posts.
 
