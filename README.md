@@ -967,6 +967,7 @@ function sample2() {
   }
 
   const fileIdOfFontFile = "###"; // File ID of font file (TTF and OTF)
+  const blob = SpreadsheetApp.getActiveSpreadsheet().getBlob();
   const PDFA = PDFApp.setPDFBlob(blob).useCustomFont(DriveApp.getFileById(fileIdOfFontFile).getBlob());
   PDFA.insertHeaderFooter(object)
     .then(blob => folder.createFile(blob))
