@@ -917,7 +917,7 @@ function sample() {
   const blob = SpreadsheetApp.getActiveSpreadsheet().getBlob()
   const PDFA = PDFApp.setPDFBlob(blob)
   PDFA.insertHeaderFooter(object)
-    .then(blob => folder.createFile(blob))
+    .then(blob => DriveApp.createFile(blob))
     .catch(err => console.log(err));
 }
 ```
@@ -943,7 +943,7 @@ function sample() {
   const blob = SpreadsheetApp.getActiveSpreadsheet().getBlob();
   const PDFA = PDFApp.setPDFBlob(blob).useStandardFont("TimesRoman");
   PDFA.insertHeaderFooter(object)
-    .then(blob => folder.createFile(blob))
+    .then(blob => DriveApp.createFile(blob))
     .catch(err => console.log(err));
 }
 ```
@@ -970,7 +970,7 @@ function sample2() {
   const blob = SpreadsheetApp.getActiveSpreadsheet().getBlob();
   const PDFA = PDFApp.setPDFBlob(blob).useCustomFont(DriveApp.getFileById(fileIdOfFontFile).getBlob());
   PDFA.insertHeaderFooter(object)
-    .then(blob => folder.createFile(blob))
+    .then(blob => DriveApp.createFile(blob))
     .catch(err => console.log(err));
 }
 ```
