@@ -210,6 +210,23 @@ function embedObjects(object) {
 
 /**
  * ### Description
+ * Insert header and/or footer into PDF blob.
+ *
+ * @param {Object} pdfBlob Blob of PDF data for embedding objects.
+ * @param {Object} object Object including the values for inserting header and footer.
+ * @return {promise} PDF Blob.
+ */
+function insertHeaderFooter(object) {
+  if (!this.pdfBlob) {
+    throw new Error("Please set the source PDF blob using the setPDFBlob method.");
+  }
+  const pdfBlob = this.pdfBlob;
+  const PDFA = new PDFApp(this);
+  return PDFA.insertHeaderFooter(pdfBlob, object);
+}
+
+/**
+ * ### Description
  * This is a Class PDFApp for managing PDF using Google Apps Script.
  *
  * Author: Tanaike ( https://tanaikech.github.io/ )
@@ -570,70 +587,8 @@ class PDFApp {
     const self = this;
     return new Promise(async (resolve, reject) => {
       try {
-        const { obj, blob } = self.getObjectFromSlide_(id, object.values);
-        const pdfDoc = await self.PDFLib.PDFDocument.create();
-        const form = pdfDoc.getForm();
-        if (self.standardFont || self.customFont) {
-          await self.setCustomFont_(pdfDoc, form, { standardFont: self.standardFont, customFont: self.customFont });
-        }
-        const pdfData = await self.getPDFObjectFromBlob_(blob).catch(err => reject(err));
-        const numberOfPages = pdfData.getPageCount();
-        const pages = await pdfDoc.copyPages(pdfData, [...Array(numberOfPages)].map((_, i) => i));
-        const xAxisOffset = 0.5;
-        const yAxisOffset = 0.5;
-        for (let i = 0; i < numberOfPages; i++) {
-          const pageNumber = i + 1;
-          const page = pdfDoc.addPage(pages[i]);
-          const pageHeight = page.getHeight();
-          const yOffset = pageHeight;
-          obj[i].forEach((v, k) => {
-            if (k == "checkbox") {
-              v.forEach(t => {
-                t.forEach(u => {
-                  const checkbox = form.createCheckBox(u.title);
-                  checkbox.addToPage(page, { x: u.leftOffset - xAxisOffset, y: yOffset - u.topOffset - u.height + yAxisOffset, width: u.width, height: u.height });
-                  self.setStyles_(checkbox, u);
-                });
-              });
-            } else if (k == "radiobutton") {
-              v.forEach((t, kk) => {
-                const radio = form.createRadioGroup(`radiobutton.${kk}.page${pageNumber}`);
-                t.forEach(u => {
-                  radio.addOptionToPage(u.title, page, { x: u.leftOffset - xAxisOffset, y: yOffset - u.topOffset - u.height + yAxisOffset, width: u.width, height: u.height });
-                  self.setStyles_(radio, u);
-                });
-              });
-            } else if (k == "textbox") {
-              v.forEach(t => {
-                t.forEach(u => {
-                  const textBox = form.createTextField(u.title);
-                  textBox.addToPage(page, {
-                    x: u.leftOffset - xAxisOffset,
-                    y: yOffset - u.topOffset - u.height + yAxisOffset,
-                    width: u.width,
-                    height: u.height,
-                  });
-                  self.setStyles_(textBox, u);
-                });
-              });
-            } else if (k == "dropdownlist") {
-              v.forEach(t => {
-                t.forEach(u => {
-                  const drowdown = form.createDropdown(u.title);
-                  drowdown.addToPage(page, {
-                    x: u.leftOffset - xAxisOffset,
-                    y: yOffset - u.topOffset - u.height + yAxisOffset,
-                    width: u.width,
-                    height: u.height
-                  });
-                  self.setStyles_(drowdown, u);
-                });
-              });
-            }
-          });
-        }
-        const bytes = await pdfDoc.save();
-        const newBlob = Utilities.newBlob([...new Int8Array(bytes)], MimeType.PDF, `new_${blob.getName()}`);
+        const obj = self.getObjectFromSlide_(id, object.values);
+        const newBlob = await self.createFields_(self, obj);
         resolve(newBlob);
       } catch (e) {
         reject(e);
@@ -704,6 +659,189 @@ class PDFApp {
         reject(e);
       }
     });
+  }
+
+  /**
+   * ### Description
+   * Insert header and/or footer into PDF blob.
+   *
+   * @param {Object} pdfBlob Blob of PDF data for embedding objects.
+   * @param {Object} object Object including the values for inserting header and footer.
+   * @return {promise} PDF Blob.
+   */
+  insertHeaderFooter(pdfBlob, object) {
+    if (!object || typeof object != "object") {
+      throw new Error("Please an object for embeddig the objects.");
+    }
+    let self = this;
+    return new Promise(async function (resolve, reject) {
+      try {
+        const pdfDoc = await self.PDFLib.PDFDocument.create();
+        const form = pdfDoc.getForm();
+        let font = null;
+        if (self.standardFont || self.customFont) {
+          await self.setCustomFont_(pdfDoc, form, { standardFont: self.standardFont, customFont: self.customFont });
+          font = await pdfDoc.embedFont(self.standardFont ? self.PDFLib.StandardFonts[self.standardFont] : new Uint8Array(self.customFont.getBytes()));
+        }
+        const pdfData = await self.getPDFObjectFromBlob_(pdfBlob).catch(err => reject(err));
+        const numberOfPages = pdfData.getPageCount();
+        const pages = await pdfDoc.copyPages(pdfData, [...Array(numberOfPages)].map((_, i) => i));
+        const { header, footer } = object;
+        const headers = header ? Object.entries(header).map(([k, v]) => [`header.${k}`, v]) : [];
+        const footers = footer ? Object.entries(footer).map(([k, v]) => [`footer.${k}`, v]) : [];
+        const sortOrder = ["LEFT", "CENTER", "RIGHT"];
+        [footers, headers].forEach((f, _, x) => f.sort((a, b) => {
+          const i1 = sortOrder.findIndex(e => a[0].includes(e.toLowerCase()));
+          const i2 = sortOrder.findIndex(e => b[0].includes(e.toLowerCase()));
+          const vlen = x.length;
+          return (i1 > -1 ? i1 : vlen) - (i2 > -1 ? i2 : vlen);
+        }));
+        const alignObj = { "center": "Center", "left": "Left", "right": "Right" };
+        for (let i = 0; i < numberOfPages; i++) {
+          const pageNumber = i + 1;
+          const page = pdfDoc.addPage(pages[i]);
+          const pageHeight = page.getHeight();
+          const pageWidth = page.getWidth();
+          if (headers.length > 0) {
+            const sizeWidthHead = pageWidth / (headers.length);
+            for (let j = 0; j < headers.length; j++) {
+              const [k, v] = headers[j];
+              const o = {
+                borderWidth: v.borderWidth || 0,
+                x: j * sizeWidthHead,
+                y: pageHeight - ((v.yOffset || 0) + (v.height || 20)),
+                width: sizeWidthHead,
+                height: v.height || 30,
+                ...v,
+                font,
+              };
+              await self.addHeaderFooterFields_(self, { page, form, pageNumber, k, v, o, alignObj, font });
+            }
+          }
+          if (footers.length > 0) {
+            const sizeWidthFoot = pageWidth / (footers.length);
+            for (let j = 0; j < footers.length; j++) {
+              const [k, v] = footers[j];
+              const o = {
+                borderWidth: v.borderWidth || 0,
+                x: j * sizeWidthFoot,
+                y: v.yOffset || 0,
+                width: sizeWidthFoot,
+                height: v.height || 30,
+                ...v,
+                font,
+              };
+              await self.addHeaderFooterFields_(self, { page, form, pageNumber, k, v, o, alignObj, font });
+            }
+          }
+        }
+        const bytes = await pdfDoc.save();
+        const newBlob = Utilities.newBlob([...new Int8Array(bytes)], MimeType.PDF, `new_${pdfBlob.getName()}`);
+        resolve(newBlob);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  /**
+   * ### Description
+   * Create fields of PDF Form.
+   *
+   * @param {Object} self this of this Class object.
+   * @param {Object} object Object for creating fields.
+   * @return {Object} Blob of new PDF.
+   */
+  addHeaderFooterFields_(self, object) {
+    const { page, form, pageNumber, k, v, o, alignObj, font } = object;
+    const fieldName = `${k}.${pageNumber}`;
+    const textBox = form.createTextField(fieldName);
+    if (v.text) {
+      textBox.setText(v.text);
+    }
+    if (v.alignment) {
+      textBox.setAlignment(self.PDFLib.TextAlignment[alignObj[v.alignment.toLowerCase()]]);
+    }
+    textBox.disableScrolling();
+    textBox.disableMultiline();
+    textBox.enableReadOnly();
+    ["x", "y", "width", "text"].forEach(e => delete v[e]);
+    textBox.addToPage(page, o);
+  }
+
+  /**
+   * ### Description
+   * Create fields of PDF Form.
+   *
+   * @param {Object} self this of this Class object.
+   * @param {Object} object Object for creating fields.
+   * @return {Object} Blob of new PDF.
+   */
+  async createFields_(self, object) {
+    const { obj, blob } = object;
+    const pdfDoc = await self.PDFLib.PDFDocument.create();
+    const form = pdfDoc.getForm();
+    if (self.standardFont || self.customFont) {
+      await self.setCustomFont_(pdfDoc, form, { standardFont: self.standardFont, customFont: self.customFont });
+    }
+    const pdfData = await self.getPDFObjectFromBlob_(blob).catch(err => reject(err));
+    const numberOfPages = pdfData.getPageCount();
+    const pages = await pdfDoc.copyPages(pdfData, [...Array(numberOfPages)].map((_, i) => i));
+    const xAxisOffset = 0.5;
+    const yAxisOffset = 0.5;
+    for (let i = 0; i < numberOfPages; i++) {
+      const pageNumber = i + 1;
+      const page = pdfDoc.addPage(pages[i]);
+      const pageHeight = page.getHeight();
+      const yOffset = pageHeight;
+      obj[i].forEach((v, k) => {
+        if (k == "checkbox") {
+          v.forEach(t => {
+            t.forEach(u => {
+              const checkbox = form.createCheckBox(u.title);
+              checkbox.addToPage(page, { x: u.leftOffset - xAxisOffset, y: yOffset - u.topOffset - u.height + yAxisOffset, width: u.width, height: u.height });
+              self.setStyles_(checkbox, u);
+            });
+          });
+        } else if (k == "radiobutton") {
+          v.forEach((t, kk) => {
+            const radio = form.createRadioGroup(`radiobutton.${kk}.page${pageNumber}`);
+            t.forEach(u => {
+              radio.addOptionToPage(u.title, page, { x: u.leftOffset - xAxisOffset, y: yOffset - u.topOffset - u.height + yAxisOffset, width: u.width, height: u.height });
+              self.setStyles_(radio, u);
+            });
+          });
+        } else if (k == "textbox") {
+          v.forEach(t => {
+            t.forEach(u => {
+              const textBox = form.createTextField(u.title);
+              textBox.addToPage(page, {
+                x: u.leftOffset - xAxisOffset,
+                y: yOffset - u.topOffset - u.height + yAxisOffset,
+                width: u.width,
+                height: u.height,
+              });
+              self.setStyles_(textBox, u);
+            });
+          });
+        } else if (k == "dropdownlist") {
+          v.forEach(t => {
+            t.forEach(u => {
+              const drowdown = form.createDropdown(u.title);
+              drowdown.addToPage(page, {
+                x: u.leftOffset - xAxisOffset,
+                y: yOffset - u.topOffset - u.height + yAxisOffset,
+                width: u.width,
+                height: u.height
+              });
+              self.setStyles_(drowdown, u);
+            });
+          });
+        }
+      });
+    }
+    const bytes = await pdfDoc.save();
+    return Utilities.newBlob([...new Int8Array(bytes)], MimeType.PDF, `new_${blob.getName()}`);
   }
 
   /**

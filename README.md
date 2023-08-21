@@ -79,7 +79,7 @@ This library uses the following 3 scopes.
 | [setValuesToPDFForm](#setvaluestopdfform) | Set values to PDF Form. |
 | [createPDFFormBySlideTemplate](#createpdfformbyslidetemplate) | Create PDF Form By Google Slide template. |
 | [embedObjects](#embedobjects) | Embed objects into PDF blob. |
-
+| [insertHeaderFooter](#insertheaderfooter) | Add custom header and footer to PDF blob. |
 
 <a name="setpdfblob"></a>
 
@@ -885,6 +885,94 @@ PDFApp.setPDFBlob(blob).embedObjects(object)
 
 - The detailed information about the format of `name` and each properties can be seen in [this post](https://medium.com/google-cloud/embedding-objects-in-pdf-using-google-apps-script-ddbee857c642).
 
+<a name="insertheaderfooter"></a>
+
+## insertHeaderFooter
+
+![](images/fig10.png)
+
+Add custom header and footer to PDF blob.
+
+When this method is used, the result showin in my blog can be obtained. [Ref](https://medium.com/google-cloud/add-header-and-footer-to-exported-pdf-from-google-spreadsheet-using-google-apps-script-664fe5b190be)
+
+### Sample script 1
+In this sample, the default font is used.
+
+```javascript
+function sample() {
+  const object = {
+    header: {
+      left: { height: 30, alignment: "Center", text: "sample text h1" },
+      center: { height: 30, alignment: "Center", text: "sample text h2" },
+      right: { height: 30, alignment: "Center", text: "sample text h3" },
+    },
+    footer: {
+      left: { height: 30, alignment: "Center", text: "sample text f1" },
+      center: { height: 30, alignment: "Center", text: "sample text f2" },
+      right: { height: 30, alignment: "Center", text: "sample text f3" },
+    },
+  }
+
+  const blob = SpreadsheetApp.getActiveSpreadsheet().getBlob()
+  const PDFA = PDFApp.setPDFBlob(blob)
+  PDFA.insertHeaderFooter(object)
+    .then(blob => folder.createFile(blob))
+    .catch(err => console.log(err));
+}
+```
+
+### Sample script 2
+In this sample, the standard font is used.
+
+```javascript
+function sample() {
+  const object = {
+    header: {
+      left: { height: 30, alignment: "Center", text: "sample text h1" },
+      center: { height: 30, alignment: "Center", text: "sample text h2" },
+      right: { height: 30, alignment: "Center", text: "sample text h3" },
+    },
+    footer: {
+      left: { height: 30, alignment: "Center", text: "sample text f1" },
+      center: { height: 30, alignment: "Center", text: "sample text f2" },
+      right: { height: 30, alignment: "Center", text: "sample text f3" },
+    },
+  }
+
+  const blob = SpreadsheetApp.getActiveSpreadsheet().getBlob();
+  const PDFA = PDFApp.setPDFBlob(blob).useStandardFont("TimesRoman");
+  PDFA.insertHeaderFooter(object)
+    .then(blob => folder.createFile(blob))
+    .catch(err => console.log(err));
+}
+```
+
+### Sample script 3
+In this sample, the custom font is used.
+
+```javascript
+function sample2() {
+  const object = {
+    header: {
+      left: { height: 30, alignment: "Center", text: "sample text h1" },
+      center: { height: 30, alignment: "Center", text: "sample text h2" },
+      right: { height: 30, alignment: "Center", text: "sample text h3" },
+    },
+    footer: {
+      left: { height: 30, alignment: "Center", text: "sample text f1" },
+      center: { height: 30, alignment: "Center", text: "sample text f2" },
+      right: { height: 30, alignment: "Center", text: "sample text f3" },
+    },
+  }
+
+  const fileIdOfFontFile = "###"; // File ID of font file (TTF and OTF)
+  const PDFA = PDFApp.setPDFBlob(blob).useCustomFont(DriveApp.getFileById(fileIdOfFontFile).getBlob());
+  PDFA.insertHeaderFooter(object)
+    .then(blob => folder.createFile(blob))
+    .catch(err => console.log(err));
+}
+```
+
 ---
 
 <a name="licence"></a>
@@ -912,5 +1000,9 @@ PDFApp.setPDFBlob(blob).embedObjects(object)
 - v1.0.1 (August 18, 2023)
 
   1. About the method of "getMetadata", `pageInfo` is added to the retrieved metadata. By this, each page size can be obtained.
+
+- v1.0.2 (August 21, 2023)
+
+  1. A new method of `insertHeaderFooter` was added. [Ref](#insertheaderfooter) When this method is used, the custom header and footer can be added when a Google Spreadsheet is exported as PDF.
 
 [TOP](#top)
