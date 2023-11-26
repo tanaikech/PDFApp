@@ -1007,4 +1007,8 @@ function sample2() {
 
   1. A new method of `insertHeaderFooter` was added. [Ref](#insertheaderfooter) When this method is used, the custom header and footer can be added when a Google Spreadsheet is exported as PDF.
 
+- v1.0.3 (November 26, 2023)
+
+  1. From [this discussion](https://github.com/Hopding/pdf-lib/issues/252), I changed the logic of the method `mergePDFs`. The method for using `mergePDFs` and the output are not changed. With this modification, the large PDF data can be merged.
+
 [TOP](#top)

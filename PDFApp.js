@@ -415,7 +415,7 @@ class PDFApp {
         const pdfDoc = await self.PDFLib.PDFDocument.create();
         for (let i = 0; i < data.length; i++) {
           const pdfData = await self.PDFLib.PDFDocument.load(data[i]);
-          const pages = await pdfDoc.copyPages(pdfData, [...Array(pdfData.getPageCount())].map((_, i) => i));
+          const pages = await pdfDoc.copyPages(pdfData, pdfData.getPageIndices());
           pages.forEach(page => pdfDoc.addPage(page));
         }
         const bytes = await pdfDoc.save();
