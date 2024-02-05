@@ -81,6 +81,7 @@ This library uses the following 3 scopes.
 | [createPDFFormBySlideTemplate](#createpdfformbyslidetemplate) | Create PDF Form By Google Slide template. |
 | [embedObjects](#embedobjects) | Embed objects into PDF blob. |
 | [insertHeaderFooter](#insertheaderfooter) | Add custom header and footer to PDF blob. |
+| [splitPDF](#splitpdf) | Split each page of a PDF to an individual PDF file. |
 
 <a name="setpdfblob"></a>
 
