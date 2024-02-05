@@ -267,7 +267,7 @@ class PDFApp {
       try {
         const pdfData = await this.getPDFObjectFromBlob_(pdfBlob).catch(err => reject(err));
         const pdfDoc = await this.PDFLib.PDFDocument.create();
-        const pages = await pdfDoc.copyPages(pdfData, [...Array(pdfData.getPageCount())].map((_, i) => i));
+        const pages = await pdfDoc.copyPages(pdfData, pdfData.getPageIndices());
         pages.forEach((page, i) => {
           if (pageNumbers.includes(i + 1)) {
             pdfDoc.addPage(page);
@@ -297,7 +297,7 @@ class PDFApp {
         const metadata = keys.reduce((o, k) => ((o[k] = pdfData[`get${k.charAt(0).toUpperCase() + k.slice(1)}`]() || null), o), {});
         metadata.numberOfPages = pdfData.getPageCount();
         const pdfDoc = await this.PDFLib.PDFDocument.create();
-        const pages = await pdfDoc.copyPages(pdfData, [...Array(pdfData.getPageCount())].map((_, i) => i));
+        const pages = await pdfDoc.copyPages(pdfData, pdfData.getPageIndices());
         metadata.pageInfo = pages.map((page, i) => {
           const { width, height } = page.getSize();
           const { x, y } = page.getPosition();
@@ -391,7 +391,7 @@ class PDFApp {
         skippedPages = [...Array(numberOfPages)].map((_, i) => i + 1).filter(e => !newOrderOfpages.includes(e));
       }
       const pdfDoc = await self.PDFLib.PDFDocument.create();
-      const pages = await pdfDoc.copyPages(pdfData, [...Array(numberOfPages)].map((_, i) => i));
+      const pages = await pdfDoc.copyPages(pdfData, pdfData.getPageIndices());
       [...newOrderOfpages, ...skippedPages].forEach(e => pdfDoc.addPage(pages[e - 1]));
       const bytes = await pdfDoc.save();
       const newBlob = Utilities.newBlob([...new Int8Array(bytes)], MimeType.PDF, `new_${pdfBlob.getName()}`);
@@ -620,7 +620,7 @@ class PDFApp {
           self.loadFontkit_();
           pdfDoc.registerFontkit(this.fontkit);
         }
-        const pages = await pdfDoc.copyPages(pdfData, [...Array(numberOfPages)].map((_, i) => i));
+        const pages = await pdfDoc.copyPages(pdfData, pdfData.getPageIndices());
         for (let i = 0; i < pages.length; i++) {
           const page = pages[i];
           const forPage = updatedObject[`page${i + 1}`];
@@ -685,7 +685,7 @@ class PDFApp {
         }
         const pdfData = await self.getPDFObjectFromBlob_(pdfBlob).catch(err => reject(err));
         const numberOfPages = pdfData.getPageCount();
-        const pages = await pdfDoc.copyPages(pdfData, [...Array(numberOfPages)].map((_, i) => i));
+        const pages = await pdfDoc.copyPages(pdfData, pdfData.getPageIndices());
         const { header, footer } = object;
         const headers = header ? Object.entries(header).map(([k, v]) => [`header.${k}`, v]) : [];
         const footers = footer ? Object.entries(footer).map(([k, v]) => [`footer.${k}`, v]) : [];
@@ -786,7 +786,7 @@ class PDFApp {
     }
     const pdfData = await self.getPDFObjectFromBlob_(blob).catch(err => reject(err));
     const numberOfPages = pdfData.getPageCount();
-    const pages = await pdfDoc.copyPages(pdfData, [...Array(numberOfPages)].map((_, i) => i));
+    const pages = await pdfDoc.copyPages(pdfData, pdfData.getPageIndices());
     const xAxisOffset = 0.5;
     const yAxisOffset = 0.5;
     for (let i = 0; i < numberOfPages; i++) {

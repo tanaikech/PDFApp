@@ -1011,4 +1011,8 @@ function sample2() {
 
   1. From [this discussion](https://github.com/Hopding/pdf-lib/issues/252), I changed the logic of the method `mergePDFs`. The method for using `mergePDFs` and the output are not changed. With this modification, the large PDF data can be merged.
 
+- v1.0.4 (February 5, 2024)
+
+  1. From [this discussion](https://github.com/Hopding/pdf-lib/issues/252), I changed the logic of `copyPages`.
+
 [TOP](#top)
