@@ -227,6 +227,21 @@ function insertHeaderFooter(object) {
 
 /**
  * ### Description
+ * Split each page of a PDF to an individual PDF file.
+ *
+ * @return {promise} PDF Blobs.
+ */
+function splitPDF() {
+  if (!this.pdfBlob) {
+    throw new Error("Please set the source PDF blob using the setPDFBlob method.");
+  }
+  const pdfBlob = this.pdfBlob;
+  const PDFA = new PDFApp(this);
+  return PDFA.splitPDF(pdfBlob);
+}
+
+/**
+ * ### Description
  * This is a Class PDFApp for managing PDF using Google Apps Script.
  *
  * Author: Tanaike ( https://tanaikech.github.io/ )
@@ -740,6 +755,37 @@ class PDFApp {
         resolve(newBlob);
       } catch (e) {
         reject(e);
+      }
+    });
+  }
+
+  /**
+   * ### Description
+   * Split each page of a PDF to an individual PDF file.
+   *
+   * @param {Object} pdfBlob Blob of PDF data.
+   * @return {promise} PDF Blob.
+   */
+  splitPDF(pdfBlob) {
+    const self = this;
+    return new Promise(async (resolve, reject) => {
+      try {
+        const pdfData = await self.getPDFObjectFromBlob_(pdfBlob).catch(err => reject(err));
+        const pageLength = pdfData.getPageCount();
+        console.log(`Total pages: ${pageLength}`);
+        const pdfBlobs = [];
+        for (let i = 0; i < pageLength; i++) {
+          console.log(`Processing page: ${i + 1}`);
+          const pdfDoc = await self.PDFLib.PDFDocument.create();
+          const [page] = await pdfDoc.copyPages(pdfData, [i]);
+          pdfDoc.addPage(page);
+          const bytes = await pdfDoc.save();
+          const blob = Utilities.newBlob([...new Int8Array(bytes)], MimeType.PDF, `page${i + 1}.pdf`);
+          pdfBlobs.push(blob);
+        }
+        resolve(pdfBlobs);
+      } catch (err) {
+        reject(err);
       }
     });
   }

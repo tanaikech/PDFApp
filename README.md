@@ -975,6 +975,28 @@ function sample2() {
 }
 ```
 
+<a name="splitpdf"></a>
+
+## splitPDF
+
+Split each page of a PDF to an individual PDF file.
+
+### Sample script
+
+```javascript
+function sample() {
+  const blob = DriveApp.getFileById("###fileId of PDF file###").getBlob();
+  PDFApp.setPDFBlob(blob).splitPDF()
+    .then(blobs => {
+      console.log(blobs.length);
+      blobs.forEach(blob => DriveApp.createFile(blob));
+    })
+    .catch(err => console.log(err));
+}
+```
+
+- When this script is run, each page of the source PDF file is created each PDF file.
+
 ---
 
 <a name="licence"></a>
@@ -1014,5 +1036,9 @@ function sample2() {
 - v1.0.4 (February 5, 2024)
 
   1. From [this discussion](https://github.com/Hopding/pdf-lib/issues/252), I changed the logic of `copyPages`.
+
+- v1.0.5 (February 5, 2024)
+
+  1. A new method of "splitPDF" was added. [Ref](#splitpdf) This method splits each page of a PDF to an individual PDF file.
 
 [TOP](#top)
