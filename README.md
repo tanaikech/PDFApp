@@ -121,7 +121,7 @@ PDFApp
 .setPDFBlob(blob)
 .useStandardFont("TimesRoman")
 .setValuesToPDFForm(object)
-  .then(newBlob => folder.createFile(newBlob))
+  .then(newBlob => DriveApp.createFile(newBlob))
   .catch(err => console.log(err));
 ```
 
@@ -145,7 +145,7 @@ PDFApp
 .setPDFBlob(blob)
 .useCustomFont(DriveApp.getFileById("###fileId of font file###).getBlob())
 .setValuesToPDFForm(object)
-  .then(newBlob => folder.createFile(newBlob))
+  .then(newBlob => DriveApp.createFile(newBlob))
   .catch(err => console.log(err));
 ```
 
