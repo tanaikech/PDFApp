@@ -28,6 +28,7 @@ I have already published the following posts.
 - [Creating PDF Forms from Google Slide Template using Google Apps Script](https://medium.com/google-cloud/creating-pdf-forms-from-google-slide-template-using-google-apps-script-cef35e7d9822)
 - [Embedding Objects in PDF using Google Apps Script](https://medium.com/google-cloud/embedding-objects-in-pdf-using-google-apps-script-ddbee857c642)
 - [Add Header and Footer to Exported PDF from Google Spreadsheet using Google Apps Script](https://medium.com/google-cloud/add-header-and-footer-to-exported-pdf-from-google-spreadsheet-using-google-apps-script-664fe5b190be)
+- [Adding Page Numbers to PDF using Google Apps Script](https://medium.com/google-cloud/adding-page-numbers-to-pdf-using-google-apps-script-ae964fb07655)
 
 I created this library to more efficiently manage PDFs with a simple script by summarising the scripts of these posts.
 
@@ -82,6 +83,7 @@ This library uses the following 3 scopes.
 | [embedObjects](#embedobjects) | Embed objects into PDF blob. |
 | [insertHeaderFooter](#insertheaderfooter) | Add custom header and footer to PDF blob. |
 | [splitPDF](#splitpdf) | Split each page of a PDF to an individual PDF file. |
+| [addPageNumbers](#addpagenumbers) | Add page numbers to PDF. |
 
 <a name="setpdfblob"></a>
 
@@ -998,6 +1000,49 @@ function sample() {
 
 - When this script is run, each page of the source PDF file is created each PDF file.
 
+<a name="addpagenumbers"></a>
+
+## addPageNumbers
+
+Add page numbers to PDF.
+
+### Sample script
+
+```javascript
+function sample() {
+  const blob = DriveApp.getFileById("###fileId of PDF file###").getBlob();
+
+  const object = { size: 10, x: "center", y: 10 };
+  PDFApp_test.setPDFBlob(blob).addPageNumbers(object)
+    .then(newBlob => DriveApp.createFile(newBlob))
+    .catch(err => console.log(err));
+}
+```
+
+The sample demonstration script is as follows. When the following script is run, a new Google Document is created and the page numbers are added to each page of the PDF.
+
+```javascript
+function sample() {
+  // Create a sample Google Document.
+  const tempDoc = DocumentApp.create("tempDoc");
+  const body = tempDoc.getBody();
+  for (let p = 0; p < 5; p++) {
+    body.appendParagraph(`sample text ${p + 1}`).appendPageBreak();
+  }
+  tempDoc.saveAndClose();
+  const blob = tempDoc.getBlob();
+
+  const object = { size: 10, x: "center", y: 10 };
+  PDFApp_test.setPDFBlob(blob).addPageNumbers(object)
+    .then(newBlob => DriveApp.createFile(newBlob))
+    .catch(err => console.log(err));
+}
+```
+
+- When this script is run, the page numbers are put to the center of the bottom of each page.
+- You can simply customize the page numbers by modifying `const object = { size: 10, x: "center", y: 10 }`. The value of `x` can be selected as one of "left", "center", and "right".
+- In this method, a simple format like `{ size: 10, x: "center", y: 10 }` is used for the page numbers. Here, the page numbers are put to only "left", "center", and "right" of the bottom of the page. The page numbers can be customized variously. So, when you want to customize more, I would like to recommend using the script on [my blog](https://medium.com/google-cloud/adding-page-numbers-to-pdf-using-google-apps-script-ae964fb07655) by modifying.
+
 ---
 
 <a name="licence"></a>
@@ -1041,5 +1086,9 @@ function sample() {
 - v1.0.5 (February 5, 2024)
 
   1. A new method of "splitPDF" was added. [Ref](#splitpdf) This method splits each page of a PDF to an individual PDF file.
+
+- v1.0.6 (May 15, 2024)
+
+  1. A new method of "addPageNumbers" was added. [Ref](#addpagenumbers) This method adds the page numbers to each page of the PDF.
 
 [TOP](#top)

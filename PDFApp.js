@@ -242,6 +242,23 @@ function splitPDF() {
 
 /**
  * ### Description
+ * Add page numbers to PDF.
+ * 
+ * @param {Object} object Object including the format of page number.
+ * @return {promise} PDF Blobs.
+ */
+function addPageNumbers(object) {
+  if (!this.pdfBlob) {
+    throw new Error("Please set the source PDF blob using the setPDFBlob method.");
+  }
+  const pdfBlob = this.pdfBlob;
+  const PDFA = new PDFApp(this);
+  return PDFA.addPageNumbers(pdfBlob, object);
+}
+
+
+/**
+ * ### Description
  * This is a Class PDFApp for managing PDF using Google Apps Script.
  *
  * Author: Tanaike ( https://tanaikech.github.io/ )
@@ -784,6 +801,41 @@ class PDFApp {
           pdfBlobs.push(blob);
         }
         resolve(pdfBlobs);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  /**
+   * ### Description
+   * Add page numbers to PDF.
+   * 
+   * @param {Object} pdfBlob Blob of PDF data.
+   * @param {Object} object Object including the format of page number.
+   * @return {promise} PDF Blobs.
+   */
+  addPageNumbers(pdfBlob, object) {
+    if (!object || typeof object != "object" || !["size", "x", "y"].every(e => e in object)) {
+      throw new Error("Please an object for adding page numbers.");
+    }
+    const self = this;
+    return new Promise(async (resolve, reject) => {
+      try {
+        const pdfData = await self.getPDFObjectFromBlob_(pdfBlob).catch(err => reject(err));
+        const pdfDoc = await self.PDFLib.PDFDocument.create();
+        (await pdfDoc.copyPages(pdfData, pdfData.getPageIndices()))
+          .forEach((page, i) => {
+            const { width } = page.getSize();
+            const obj = { center: width / 2, left: 20, right: width - 20 };
+            const pageFormatObj = { ...object };
+            pageFormatObj.x = obj[object.x];
+            page.drawText(`${i + 1}`, pageFormatObj);
+            pdfDoc.addPage(page);
+          });
+        const bytes = await pdfDoc.save();
+        const newBlob = Utilities.newBlob([...new Int8Array(bytes)], MimeType.PDF, `new_${pdfBlob.getName()}`);
+        resolve(newBlob);
       } catch (err) {
         reject(err);
       }
