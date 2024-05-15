@@ -826,11 +826,15 @@ class PDFApp {
         const pdfDoc = await self.PDFLib.PDFDocument.create();
         (await pdfDoc.copyPages(pdfData, pdfData.getPageIndices()))
           .forEach((page, i) => {
-            const { width } = page.getSize();
-            const obj = { center: width / 2, left: 20, right: width - 20 };
-            const pageFormatObj = { ...object };
-            pageFormatObj.x = obj[object.x];
-            page.drawText(`${i + 1}`, pageFormatObj);
+            if (isNaN(object.x)) {
+              const { width } = page.getSize();
+              const obj = { center: width / 2, left: 20, right: width - 20 };
+              const pageFormatObj = { ...object };
+              pageFormatObj.x = obj[object.x];
+              page.drawText(`${i + 1}`, pageFormatObj);
+            } else {
+              page.drawText(`${i + 1}`, object);
+            }
             pdfDoc.addPage(page);
           });
         const bytes = await pdfDoc.save();

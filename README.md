@@ -1042,6 +1042,7 @@ function sample() {
 - When this script is run, the page numbers are put to the center of the bottom of each page.
 - You can simply customize the page numbers by modifying `const object = { size: 10, x: "center", y: 10 }`. The value of `x` can be selected as one of "left", "center", and "right".
 - In this method, a simple format like `{ size: 10, x: "center", y: 10 }` is used for the page numbers. Here, the page numbers are put to only "left", "center", and "right" of the bottom of the page. The page numbers can be customized variously. So, when you want to customize more, I would like to recommend using the script on [my blog](https://medium.com/google-cloud/adding-page-numbers-to-pdf-using-google-apps-script-ae964fb07655) by modifying.
+- When a number is used to the property `x` instead of "left", "center", and "right", the inputted number is directly used. For example, you can also use `const object = { size: 10, x: 10, y: 10 };` instead of `const object = { size: 10, x: "center", y: 10 };`.
 
 ---
 
@@ -1090,5 +1091,9 @@ function sample() {
 - v1.0.6 (May 15, 2024)
 
   1. A new method of "addPageNumbers" was added. [Ref](#addpagenumbers) This method adds the page numbers to each page of the PDF.
+
+- v1.0.7 (May 15, 2024)
+
+  1. The method of "addPageNumbers" was updated. [Ref](#addpagenumbers) When a number is used to the property `x` instead of "left", "center", and "right", the inputted number is directly used.
 
 [TOP](#top)
