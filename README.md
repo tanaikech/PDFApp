@@ -1013,7 +1013,7 @@ function sample() {
   const blob = DriveApp.getFileById("###fileId of PDF file###").getBlob();
 
   const object = { size: 10, x: "center", y: 10 };
-  PDFApp_test.setPDFBlob(blob).addPageNumbers(object)
+  PDFApp.setPDFBlob(blob).addPageNumbers(object)
     .then(newBlob => DriveApp.createFile(newBlob))
     .catch(err => console.log(err));
 }
@@ -1033,7 +1033,7 @@ function sample() {
   const blob = tempDoc.getBlob();
 
   const object = { size: 10, x: "center", y: 10 };
-  PDFApp_test.setPDFBlob(blob).addPageNumbers(object)
+  PDFApp.setPDFBlob(blob).addPageNumbers(object)
     .then(newBlob => DriveApp.createFile(newBlob))
     .catch(err => console.log(err));
 }
